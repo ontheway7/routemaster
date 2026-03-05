@@ -238,6 +238,7 @@ function loadKakaoSDK() {
 }
 
 async function initApp() {
+  document.getElementById('sheet').classList.remove('open');
   showStatus('카카오맵 로딩 중...');
   try {
     await loadKakaoSDK();
@@ -703,10 +704,7 @@ function closeMapFullscreen() {
   setTimeout(() => kakaoMap.relayout(), 300);
 }
 
-window.onload = function() {
-  document.getElementById('sheet').classList.remove('open');
-  initApp();
-};
+window.onload = initApp;
 </script>
 </body>
 </html>
