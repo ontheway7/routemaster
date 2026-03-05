@@ -624,6 +624,7 @@ function drawMap(cs, names) {
 function showResult(names, cs, optD, savings, totalMin) {
   document.getElementById('saveBar').style.display = 'flex';
   document.getElementById('btnNavi2').style.display = 'flex';
+  document.getElementById('bottom').style.display = 'none';
   document.getElementById('sStops').textContent = names.length - 1;
   document.getElementById('sDist').textContent = optD.toFixed(1) + 'km';
   document.getElementById('sTime').textContent = Math.floor(totalMin/60) + 'h' + (totalMin%60) + 'm';
@@ -654,7 +655,10 @@ function showResult(names, cs, optD, savings, totalMin) {
   document.getElementById('sheet').classList.add('open');
 }
 
-function closeSheet() { document.getElementById('sheet').classList.remove('open'); }
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('open');
+  document.getElementById('bottom').style.display = '';
+}
 
 // ── 카카오내비 ──
 function openKakaoNavi() {
