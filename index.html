@@ -343,7 +343,7 @@ function useCurrentLocation() {
       btn.disabled = false;
       alert('위치를 가져올 수 없습니다: ' + err.message);
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    { enableHighAccuracy: false, timeout: 5000 }
   );
 }
 
