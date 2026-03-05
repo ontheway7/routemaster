@@ -6,7 +6,7 @@
   "orientation": "any",
   "background_color": "#0d1117",
   "theme_color": "#0d1117",
-  "start_url": "./루트마스터_v3.4.html",
+  "start_url": "./index.html",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/google/material-design-icons/master/png/maps/map/materialicons/48dp/2x/baseline_map_black_48dp.png",
