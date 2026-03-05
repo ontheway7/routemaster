@@ -195,11 +195,11 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
       <button class="btn-close" onclick="closeSheet()">✕</button>
     </div>
     <div id="sheetSteps" style="padding:0 16px"></div>
-    <div class="save-bar">
+    <div class="save-bar" id="saveBar" style="display:none">
       <div><div class="save-label">임의 순서 대비 절약</div><div style="font-size:0.68rem;color:var(--muted);margin-top:1px">TSP 최적화 알고리즘</div></div>
       <div class="save-val" id="saveVal">-</div>
     </div>
-    <button class="btn-navi2" onclick="openKakaoNavi()">🧭 카카오내비로 길안내</button>
+    <button class="btn-navi2" id="btnNavi2" onclick="openKakaoNavi()" style="display:none">🧭 카카오내비로 길안내</button>
   </div>
 
   <!-- Status -->
@@ -621,6 +621,8 @@ function drawMap(cs, names) {
 
 // ── RESULT ──
 function showResult(names, cs, optD, savings, totalMin) {
+  document.getElementById('saveBar').style.display = 'flex';
+  document.getElementById('btnNavi2').style.display = 'flex';
   document.getElementById('sStops').textContent = names.length - 1;
   document.getElementById('sDist').textContent = optD.toFixed(1) + 'km';
   document.getElementById('sTime').textContent = Math.floor(totalMin/60) + 'h' + (totalMin%60) + 'm';
