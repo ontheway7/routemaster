@@ -5,6 +5,7 @@
   v2.0 - 2026.03.05  내 장소 / 내 루트 기능 추가 (localStorage)
   v2.1 - 2026.03.05  아이콘 교체(🍽️🎠🏔️📖), 장소 편집 기능 추가
   v3.0 - 2026.03.05  전체화면 내 위치 실시간 표시, 지도 회전, 가로보기 최적화
+  v3.1 - 2026.03.05  회전 버그 수정, 내 위치 토글 버그 수정, 경로 최적화 없이도 지도 전체화면 사용 가능
 -->
 
 <!DOCTYPE html>
@@ -230,6 +231,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
     <div class="logo">루트<span>마스터</span></div>
     <!-- v2.0 추가 -->
     <div class="header-btns">
+      <button class="btn-header" onclick="openMapFullscreen()">🗺️ 지도</button>
       <button class="btn-header" onclick="openModal('places')">📌 내 장소</button>
       <button class="btn-header" onclick="openModal('routes')">🗂️ 내 루트</button>
     </div>
@@ -372,7 +374,7 @@ async function initApp() {
 
     // 지도 초기화
     const container = document.getElementById('map');
-    const options = { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 8, rotateEnable: true };
+    const options = { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 8 };
     kakaoMap = new kakao.maps.Map(container, options);
     ps = new kakao.maps.services.Places();
     geocoder = new kakao.maps.services.Geocoder();
@@ -825,10 +827,12 @@ function openKakaoNavi() {
 
 // ── 지도 전체화면 ──
 function openMapFullscreen() {
-  if (!result) return;
   const mapEl = document.getElementById('map');
   mapEl.classList.add('fullscreen');
-  setTimeout(() => kakaoMap.relayout(), 300);
+  setTimeout(() => {
+    kakaoMap.relayout();
+    enableMapRotation();
+  }, 300);
 }
 function closeMapFullscreen() {
   const mapEl = document.getElementById('map');
@@ -874,14 +878,10 @@ function startMyLocation() {
           xAnchor: 0.5,
           zIndex: 10
         });
+        // 첫 수신 시에만 지도 중심 이동
+        kakaoMap.setCenter(latlng);
       } else {
         myLocMarker.setPosition(latlng);
-      }
-
-      // 첫 수신 시 지도 중심 이동
-      if (myLocTracking) {
-        kakaoMap.setCenter(latlng);
-        myLocTracking = 'active'; // 이후엔 중심 고정 안 함 (자유 탐색 가능)
       }
     },
     err => {
@@ -904,6 +904,43 @@ function stopMyLocation() {
   myLocTracking = false;
   const btn = document.getElementById('btnMyLoc');
   if (btn) { btn.classList.remove('tracking'); btn.textContent = '📍'; }
+}
+
+// v3.1: 두 손가락 회전 직접 구현
+let rotStartAngle = null;
+let rotMapAngle = 0;
+
+function getTouchAngle(touches) {
+  const dx = touches[1].clientX - touches[0].clientX;
+  const dy = touches[1].clientY - touches[0].clientY;
+  return Math.atan2(dy, dx) * 180 / Math.PI;
+}
+
+function enableMapRotation() {
+  const mapEl = document.getElementById('map');
+
+  mapEl.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      rotStartAngle = getTouchAngle(e.touches);
+    }
+  }, { passive: true });
+
+  mapEl.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && rotStartAngle !== null) {
+      const cur = getTouchAngle(e.touches);
+      const delta = cur - rotStartAngle;
+      rotStartAngle = cur;
+      rotMapAngle = (rotMapAngle + delta + 360) % 360;
+      // 카카오맵 컨테이너 CSS 회전 적용
+      const inner = mapEl.querySelector('div');
+      if (inner) inner.style.transform = `rotate(${rotMapAngle}deg)`;
+      inner.style.transformOrigin = 'center center';
+    }
+  }, { passive: true });
+
+  mapEl.addEventListener('touchend', e => {
+    if (e.touches.length < 2) rotStartAngle = null;
+  }, { passive: true });
 }
 
 // v3.0 추가: 가로/세로 전환 시 지도 relayout
