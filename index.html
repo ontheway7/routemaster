@@ -23,9 +23,6 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg); border-bottom:1px solid var(--border); flex-shrink:0; z-index:10; }
 .logo { font-family:'Black Han Sans',sans-serif; font-size:1.3rem; letter-spacing:2px; color:var(--accent); }
 .logo span { color:var(--text); }
-.mode-tabs { display:flex; gap:3px; background:var(--card); padding:3px; border-radius:8px; }
-.mode-tab { padding:5px 9px; border:none; background:transparent; color:var(--muted); border-radius:5px; font-family:'Noto Sans KR',sans-serif; font-size:0.72rem; cursor:pointer; transition:all 0.2s; }
-.mode-tab.active { background:var(--accent); color:#000; font-weight:700; }
 
 /* MAP */
 #map { flex:1; position:relative; background:var(--surface); min-height:0; }
@@ -124,14 +121,9 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 </head>
 <body>
 <div class="app">
-  <!-- Header -->
+  <!-- Header: 탭 제거 -->
   <div class="header">
     <div class="logo">루트<span>마스터</span></div>
-    <div class="mode-tabs">
-      <button class="mode-tab active" onclick="setMode('travel')" id="tab-travel">✈ 여행</button>
-      <button class="mode-tab" onclick="setMode('delivery')" id="tab-delivery">📦 배달</button>
-      <button class="mode-tab" onclick="setMode('tour')" id="tab-tour">🚗 드라이브</button>
-    </div>
   </div>
 
   <!-- Map -->
@@ -156,7 +148,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
       <div class="field-row">
         <div class="fdot s"></div>
         <div class="iw">
-          <input class="fi" id="fi-start" placeholder="출발지 (예: 부산역)" autocomplete="off">
+          <input class="fi" id="fi-start" placeholder="출발지 (예: 광화문역)" autocomplete="off">
           <div class="ac-list" id="ac-start"></div>
         </div>
       </div>
@@ -175,7 +167,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 
     <div class="opts">
       <button class="opt on" id="opt-short" onclick="togOpt('short')">📏 최단거리</button>
-      <button class="opt" id="opt-traffic" onclick="togOpt('traffic')">🚦 교통반영</button>
+      <button class="opt on" id="opt-traffic" onclick="togOpt('traffic')">🚦 교통반영</button>
       <button class="opt" id="opt-return" onclick="togOpt('return')">🔄 출발지복귀</button>
     </div>
 
@@ -223,11 +215,7 @@ function loadKakaoSDK() {
     if (window.kakao && window.kakao.maps) { resolve(); return; }
     const s = document.createElement('script');
     s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_KEY}&libraries=services&autoload=false`;
-    s.onload = () => {
-      kakao.maps.load(() => {
-        resolve();
-      });
-    };
+    s.onload = () => { kakao.maps.load(() => { resolve(); }); };
     s.onerror = () => reject(new Error('카카오 SDK 로드 실패'));
     document.head.appendChild(s);
   });
@@ -239,22 +227,36 @@ async function initApp() {
     await loadKakaoSDK();
     kakaoReady = true;
 
-    // 지도 초기화
     const container = document.getElementById('map');
     const options = { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 8 };
     kakaoMap = new kakao.maps.Map(container, options);
     ps = new kakao.maps.services.Places();
     geocoder = new kakao.maps.services.Geocoder();
 
-    // 현재 위치
+    // 현재 위치로 지도 이동 + 출발지 자동 입력
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(pos => {
-        kakaoMap.setCenter(new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        kakaoMap.setCenter(new kakao.maps.LatLng(lat, lng));
+        geocoder.coord2Address(lng, lat, (result, status) => {
+          if (status === kakao.maps.services.Status.OK && result.length) {
+            const addr = result[0].road_address
+              ? result[0].road_address.address_name
+              : result[0].address.address_name;
+            document.getElementById('fi-start').value = addr;
+            coords[addr] = { lat, lng };
+          } else {
+            document.getElementById('fi-start').value = '현재 위치';
+            coords['현재 위치'] = { lat, lng };
+          }
+        });
       });
     }
 
     hideStatus();
-    setMode('travel');
+    stops = []; sid = 0;
+    document.getElementById('stopsEl').innerHTML = '';
     setupInputs();
   } catch(e) {
     showStatus('⚠️ 지도 로드 실패: ' + e.message);
@@ -273,7 +275,7 @@ function hideStatus() {
 
 // ── INPUT AUTOCOMPLETE ──
 let acTimers = {};
-let coords = {}; // name -> {lat,lng}
+let coords = {};
 
 function setupInputs() {
   setupAC('fi-start', 'ac-start');
@@ -353,7 +355,6 @@ function renderStops() {
     `;
     c.appendChild(div);
 
-    // AC 설정
     const input = div.querySelector(`#fi-s${stop.id}`);
     const acEl = div.querySelector(`#${acId}`);
     input.addEventListener('input', () => {
@@ -369,30 +370,11 @@ function renderStops() {
   });
 }
 
-// ── OPTIONS ──
-let opts = { short: true, traffic: false, return: false };
+// ── OPTIONS: 교통반영 default on ──
+let opts = { short: true, traffic: true, return: false };
 function togOpt(k) {
   opts[k] = !opts[k];
   document.getElementById('opt-' + k).classList.toggle('on', opts[k]);
-}
-
-// ── MODE ──
-const samples = {
-  travel: { start:'부산역', end:'', stops:['해운대 해수욕장','광안리 해수욕장','감천문화마을'] },
-  delivery: { start:'강남구청역', end:'', stops:['역삼동','선릉역','삼성동 코엑스'] },
-  tour: { start:'경복궁', end:'', stops:['북촌한옥마을','창덕궁','인사동'] }
-};
-
-function setMode(m) {
-  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + m).classList.add('active');
-  const s = samples[m];
-  document.getElementById('fi-start').value = s.start;
-  document.getElementById('fi-end').value = s.end;
-  stops = []; sid = 0;
-  document.getElementById('stopsEl').innerHTML = '';
-  s.stops.forEach(n => addStop(n));
-  closeSheet();
 }
 
 // ── GEOCODING ──
@@ -479,7 +461,6 @@ async function optimize() {
     const endC = endName ? await getCoords(endName) : null;
     const wpCsRaw = await Promise.all(wpNames.map(n => getCoords(n)));
 
-    // 유효한 것만 필터
     const validNames = [], validCs = [];
     wpNames.forEach((n, i) => { if (wpCsRaw[i]) { validNames.push(n); validCs.push(wpCsRaw[i]); } });
 
@@ -587,7 +568,6 @@ function openNavi() {
   }
 }
 
-// ── START ──
 window.onload = initApp;
 </script>
 </body>
