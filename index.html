@@ -8,6 +8,7 @@
   v3.1 - 2026.03.05  회전 버그 수정, 내 위치 토글 버그 수정, 경로 최적화 없이도 지도 전체화면 사용 가능
   v3.2 - 2026.03.05  CSS 회전 제거, 지도 탭으로 전체화면 진입, 헤더 지도 버튼 제거
   v3.3 - 2026.03.05  내 위치 추적 방식 변경 - 지도가 내 위치를 계속 따라옴
+  v3.4 - 2026.03.05  PWA 전체화면 지원 (홈화면 추가 시 주소창 제거)
 -->
 
 <!DOCTYPE html>
@@ -16,8 +17,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="루트마스터">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22%EB%A3%A8%ED%8A%B8%EB%A7%88%EC%8A%A4%ED%84%B0%22%2C%22short_name%22%3A%22%EB%A3%A8%ED%8A%B8%EB%A7%88%EC%8A%A4%ED%84%B0%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230d1117%22%2C%22theme_color%22%3A%22%230d1117%22%2C%22start_url%22%3A%22.%22%7D">
 <title>루트마스터</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
