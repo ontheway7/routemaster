@@ -99,8 +99,8 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .btn-go:disabled { background:var(--border); color:var(--muted); cursor:not-allowed; }
 
 /* RESULT SHEET */
-.sheet { position:absolute; bottom:0; left:0; right:0; background:var(--bg); border-top:1px solid var(--border); border-radius:20px 20px 0 0; max-height:62vh; overflow-y:auto; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); z-index:20; padding-bottom:16px; }
-.sheet.open { transform:translateY(0); }
+.sheet { position:absolute; bottom:0; left:0; right:0; background:var(--bg); border-top:1px solid var(--border); border-radius:20px 20px 0 0; max-height:62vh; overflow-y:auto; display:none; transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); z-index:20; padding-bottom:16px; }
+.sheet.open { display:block; }
 .sheet-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px 8px; }
 .sheet-title { font-family:'Black Han Sans',sans-serif; font-size:1rem; color:var(--accent); letter-spacing:1px; }
 .btn-close { background:var(--card); border:none; color:var(--muted); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:0.95rem; position:relative; z-index:30; }
@@ -191,7 +191,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   </div>
 
   <!-- Result Sheet: 크롬 세션복원 방지용 인라인 스타일로 강제 숨김 -->
-  <div class="sheet" id="sheet" style="transform:translateY(100%) !important">
+  <div class="sheet" id="sheet">
     <div class="sheet-head">
       <div class="sheet-title">최적 경로</div>
       <button class="btn-close" onclick="closeSheet()">✕</button>
@@ -636,16 +636,15 @@ function showResult(names, cs, optD, savings, totalMin) {
   });
 
   document.getElementById('saveVal').textContent = savings + '% 절약';
-  // sheet 열기: 인라인 스타일 제거 후 open 클래스 추가
   const sheet = document.getElementById('sheet');
-  sheet.style.transform = '';
+  sheet.style.display = '';
   sheet.classList.add('open');
 }
 
 function closeSheet() {
   const sheet = document.getElementById('sheet');
   sheet.classList.remove('open');
-  sheet.style.transform = 'translateY(100%)';
+  sheet.style.display = 'none';
 }
 
 // ── 카카오내비 ──
@@ -694,7 +693,7 @@ window.onload = function() {
   // 크롬 세션 복원 시 sheet 강제 초기화
   const sheet = document.getElementById('sheet');
   sheet.classList.remove('open');
-  sheet.style.transform = 'translateY(100%)';
+  sheet.style.display = 'none';
   document.getElementById('mapStats').classList.remove('show');
   result = null;
   initApp();
