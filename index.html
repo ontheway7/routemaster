@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#0d1117">
 <title>루트마스터</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 <style>
 :root {
   --bg: #0d1117; --surface: #161b22; --card: #21262d; --border: #30363d;
@@ -23,12 +24,12 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg); border-bottom:1px solid var(--border); flex-shrink:0; z-index:10; }
 .logo { font-family:'Black Han Sans',sans-serif; font-size:1.3rem; letter-spacing:2px; color:var(--accent); }
 .logo span { color:var(--text); }
-.mode-tabs { display:flex; gap:3px; background:var(--card); padding:3px; border-radius:8px; }
-.mode-tab { padding:5px 9px; border:none; background:transparent; color:var(--muted); border-radius:5px; font-family:'Noto Sans KR',sans-serif; font-size:0.72rem; cursor:pointer; transition:all 0.2s; }
-.mode-tab.active { background:var(--accent); color:#000; font-weight:700; }
 
 /* MAP */
-#map { flex:1; position:relative; background:var(--surface); min-height:0; }
+#map { flex:1; position:relative; background:var(--surface); min-height:0; transition:all 0.3s ease; cursor:pointer; }
+#map.fullscreen { position:fixed; inset:0; z-index:100; max-width:100%; cursor:default; }
+.btn-map-close { position:absolute; top:12px; right:12px; z-index:101; background:rgba(13,17,23,0.85); border:1px solid var(--border); color:var(--text); width:36px; height:36px; border-radius:50%; font-size:1rem; cursor:pointer; display:none; align-items:center; justify-content:center; }
+#map.fullscreen .btn-map-close { display:flex; }
 .map-empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; pointer-events:none; z-index:1; }
 .map-empty.hide { display:none; }
 .map-empty-icon { font-size:2.5rem; }
@@ -78,6 +79,11 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .btn-add { display:flex; align-items:center; gap:6px; padding:7px 16px; background:none; border:none; color:var(--muted); font-family:'Noto Sans KR',sans-serif; font-size:0.82rem; cursor:pointer; transition:color 0.2s; }
 .btn-add:hover { color:var(--accent3); }
 
+/* LOCATION BTN */
+.btn-loc { background:var(--card); border:1px solid var(--border); color:var(--accent); width:38px; height:38px; border-radius:10px; font-size:1.1rem; cursor:pointer; flex-shrink:0; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
+.btn-loc:active { background:var(--surface); transform:scale(0.95); }
+.btn-loc.spinning { animation:spin 0.7s linear infinite; }
+
 /* OPTIONS */
 .opts { padding:5px 16px 8px; display:flex; gap:5px; flex-wrap:wrap; }
 .opt { padding:5px 11px; border:1px solid var(--border); background:var(--card); color:var(--muted); border-radius:20px; font-family:'Noto Sans KR',sans-serif; font-size:0.73rem; cursor:pointer; transition:all 0.15s; }
@@ -94,7 +100,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .sheet.open { transform:translateY(0); }
 .sheet-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px 8px; }
 .sheet-title { font-family:'Black Han Sans',sans-serif; font-size:1rem; color:var(--accent); letter-spacing:1px; }
-.btn-close { background:var(--card); border:none; color:var(--muted); width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:0.85rem; }
+.btn-close { background:var(--card); border:none; color:var(--muted); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:0.95rem; position:relative; z-index:30; }
 .rstep { display:flex; gap:12px; }
 .rl { display:flex; flex-direction:column; align-items:center; width:30px; flex-shrink:0; }
 .rdot { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:700; flex-shrink:0; }
@@ -108,7 +114,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .save-bar { margin:10px 16px 0; background:var(--card); border-radius:10px; padding:11px 14px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(240,180,41,0.2); }
 .save-label { font-size:0.76rem; color:var(--muted); }
 .save-val { font-family:'Black Han Sans',sans-serif; font-size:1.15rem; color:var(--accent); }
-.btn-navi { margin:10px 16px 0; width:calc(100% - 32px); padding:12px; background:#FEE500; border:none; border-radius:10px; color:#000; font-family:'Black Han Sans',sans-serif; font-size:0.95rem; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+.btn-navi2 { margin:10px 16px 0; width:calc(100% - 32px); padding:12px; background:#3A1D94; border:none; border-radius:10px; color:#fff; font-family:'Black Han Sans',sans-serif; font-size:0.95rem; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
 
 /* STATUS */
 .status-bar { position:absolute; bottom:70px; left:16px; right:16px; background:rgba(22,27,34,0.95); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:0.78rem; color:var(--muted); z-index:10; display:none; text-align:center; }
@@ -127,11 +133,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   <!-- Header -->
   <div class="header">
     <div class="logo">루트<span>마스터</span></div>
-    <div class="mode-tabs">
-      <button class="mode-tab active" onclick="setMode('travel')" id="tab-travel">✈ 여행</button>
-      <button class="mode-tab" onclick="setMode('delivery')" id="tab-delivery">📦 배달</button>
-      <button class="mode-tab" onclick="setMode('tour')" id="tab-tour">🚗 드라이브</button>
-    </div>
+
   </div>
 
   <!-- Map -->
@@ -140,6 +142,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
       <div class="map-empty-icon">🗺️</div>
       <div class="map-empty-text">출발지와 경유지를 입력하고<br>경로 최적화를 실행하세요</div>
     </div>
+    <button class="btn-map-close" onclick="closeMapFullscreen()">✕</button>
     <div class="map-stats" id="mapStats">
       <div class="mstat"><div class="mstat-val" id="sStops">-</div><div class="mstat-label">경유지</div></div>
       <div class="mstat"><div class="mstat-val" id="sDist">-</div><div class="mstat-label">총 거리</div></div>
@@ -156,15 +159,16 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
       <div class="field-row">
         <div class="fdot s"></div>
         <div class="iw">
-          <input class="fi" id="fi-start" placeholder="출발지 (예: 부산역)" autocomplete="off">
+          <input class="fi" id="fi-start" placeholder="출발지 (예: 광화문역)" autocomplete="off">
           <div class="ac-list" id="ac-start"></div>
         </div>
+        <button class="btn-loc" id="btnLoc" onclick="useCurrentLocation()" title="현재 위치 사용">📍</button>
       </div>
       <div style="display:flex;padding-left:4px;margin-bottom:5px"><div class="fline"></div></div>
       <div class="field-row">
         <div class="fdot e"></div>
         <div class="iw">
-          <input class="fi" id="fi-end" placeholder="도착지 (비워두면 출발지 복귀)" autocomplete="off">
+          <input class="fi" id="fi-end" placeholder="도착지" autocomplete="off">
           <div class="ac-list" id="ac-end"></div>
         </div>
       </div>
@@ -175,7 +179,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 
     <div class="opts">
       <button class="opt on" id="opt-short" onclick="togOpt('short')">📏 최단거리</button>
-      <button class="opt" id="opt-traffic" onclick="togOpt('traffic')">🚦 교통반영</button>
+      <button class="opt on" id="opt-traffic" onclick="togOpt('traffic')">🚦 교통반영</button>
       <button class="opt" id="opt-return" onclick="togOpt('return')">🔄 출발지복귀</button>
     </div>
 
@@ -195,7 +199,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
       <div><div class="save-label">임의 순서 대비 절약</div><div style="font-size:0.68rem;color:var(--muted);margin-top:1px">TSP 최적화 알고리즘</div></div>
       <div class="save-val" id="saveVal">-</div>
     </div>
-    <button class="btn-navi" onclick="openNavi()">🗺 카카오맵으로 길찾기</button>
+    <button class="btn-navi2" onclick="openKakaoNavi()">🧭 카카오내비로 길안내</button>
   </div>
 
   <!-- Status -->
@@ -246,15 +250,44 @@ async function initApp() {
     ps = new kakao.maps.services.Places();
     geocoder = new kakao.maps.services.Geocoder();
 
-    // 현재 위치
+    // 현재 위치로 지도 이동 + 출발지 자동 입력
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(pos => {
-        kakaoMap.setCenter(new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        kakaoMap.setCenter(new kakao.maps.LatLng(lat, lng));
+        // 역지오코딩으로 출발지 자동 입력
+        if (geocoder) {
+          geocoder.coord2Address(lng, lat, (result, status) => {
+            if (status === kakao.maps.services.Status.OK && result.length) {
+              const addr = result[0].road_address
+                ? result[0].road_address.address_name
+                : result[0].address.address_name;
+              document.getElementById('fi-start').value = addr;
+              coords[addr] = { lat, lng };
+            } else {
+              document.getElementById('fi-start').value = '현재 위치';
+              coords['현재 위치'] = { lat, lng };
+            }
+          });
+        }
       });
     }
 
+    // Kakao JS SDK 초기화
+    if (window.Kakao && !Kakao.isInitialized()) {
+      Kakao.init(KAKAO_KEY);
+    }
+
     hideStatus();
-    setMode('travel');
+    // 초기 경유지 세팅
+    stops = []; sid = 0;
+    document.getElementById('stopsEl').innerHTML = '';
+    ['경주불국사','안동하회마을'].forEach(n => addStop(n));
+    // opts 버튼 초기 동기화
+    Object.keys(opts).forEach(k => {
+      document.getElementById('opt-' + k).classList.toggle('on', opts[k]);
+    });
     setupInputs();
   } catch(e) {
     showStatus('⚠️ 지도 로드 실패: ' + e.message);
@@ -271,9 +304,51 @@ function hideStatus() {
   document.getElementById('statusBar').classList.remove('show');
 }
 
+// ── 현재 위치 출발지 설정 ──
+function useCurrentLocation() {
+  const btn = document.getElementById('btnLoc');
+  const input = document.getElementById('fi-start');
+  if (!navigator.geolocation) { alert('위치 서비스를 사용할 수 없습니다.'); return; }
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      if (geocoder) {
+        geocoder.coord2Address(lng, lat, (result, status) => {
+          btn.classList.remove('spinning');
+          btn.disabled = false;
+          if (status === kakao.maps.services.Status.OK && result.length) {
+            const addr = result[0].road_address
+              ? result[0].road_address.address_name
+              : result[0].address.address_name;
+            input.value = addr;
+            coords[addr] = { lat, lng };
+          } else {
+            input.value = '현재 위치';
+            coords['현재 위치'] = { lat, lng };
+          }
+        });
+      } else {
+        btn.classList.remove('spinning');
+        btn.disabled = false;
+        input.value = '현재 위치';
+        coords['현재 위치'] = { lat, lng };
+      }
+    },
+    err => {
+      btn.classList.remove('spinning');
+      btn.disabled = false;
+      alert('위치를 가져올 수 없습니다: ' + err.message);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
 // ── INPUT AUTOCOMPLETE ──
 let acTimers = {};
-let coords = {}; // name -> {lat,lng}
+let coords = {};
 
 function setupInputs() {
   setupAC('fi-start', 'ac-start');
@@ -283,14 +358,23 @@ function setupInputs() {
 function setupAC(inputId, acId) {
   const input = document.getElementById(inputId);
   const acEl = document.getElementById(acId);
+  let isComposing = false;
 
-  input.addEventListener('input', () => {
+  input.addEventListener('compositionstart', () => { isComposing = true; });
+  input.addEventListener('compositionend', () => {
+    isComposing = false;
     clearTimeout(acTimers[inputId]);
     const val = input.value.trim();
     if (val.length < 2) { acEl.style.display = 'none'; return; }
     acTimers[inputId] = setTimeout(() => doSearch(val, acEl, input), 250);
   });
-
+  input.addEventListener('input', () => {
+    if (isComposing) return;
+    clearTimeout(acTimers[inputId]);
+    const val = input.value.trim();
+    if (val.length < 2) { acEl.style.display = 'none'; return; }
+    acTimers[inputId] = setTimeout(() => doSearch(val, acEl, input), 250);
+  });
   input.addEventListener('blur', () => {
     setTimeout(() => { acEl.style.display = 'none'; }, 200);
   });
@@ -353,10 +437,20 @@ function renderStops() {
     `;
     c.appendChild(div);
 
-    // AC 설정
     const input = div.querySelector(`#fi-s${stop.id}`);
     const acEl = div.querySelector(`#${acId}`);
+    let isComposing = false;
+    input.addEventListener('compositionstart', () => { isComposing = true; });
+    input.addEventListener('compositionend', () => {
+      isComposing = false;
+      stops[i].name = input.value;
+      clearTimeout(acTimers[stop.id]);
+      const val = input.value.trim();
+      if (val.length < 2) { acEl.style.display = 'none'; return; }
+      acTimers[stop.id] = setTimeout(() => doSearch(val, acEl, input), 250);
+    });
     input.addEventListener('input', () => {
+      if (isComposing) return;
       stops[i].name = input.value;
       clearTimeout(acTimers[stop.id]);
       const val = input.value.trim();
@@ -370,30 +464,14 @@ function renderStops() {
 }
 
 // ── OPTIONS ──
-let opts = { short: true, traffic: false, return: false };
+let opts = { short: true, traffic: true, return: false };
 function togOpt(k) {
   opts[k] = !opts[k];
   document.getElementById('opt-' + k).classList.toggle('on', opts[k]);
 }
 
 // ── MODE ──
-const samples = {
-  travel: { start:'부산역', end:'', stops:['해운대 해수욕장','광안리 해수욕장','감천문화마을'] },
-  delivery: { start:'강남구청역', end:'', stops:['역삼동','선릉역','삼성동 코엑스'] },
-  tour: { start:'경복궁', end:'', stops:['북촌한옥마을','창덕궁','인사동'] }
-};
-
-function setMode(m) {
-  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + m).classList.add('active');
-  const s = samples[m];
-  document.getElementById('fi-start').value = s.start;
-  document.getElementById('fi-end').value = s.end;
-  stops = []; sid = 0;
-  document.getElementById('stopsEl').innerHTML = '';
-  s.stops.forEach(n => addStop(n));
-  closeSheet();
-}
+// (단일 모드)
 
 // ── GEOCODING ──
 function getCoords(name) {
@@ -479,7 +557,6 @@ async function optimize() {
     const endC = endName ? await getCoords(endName) : null;
     const wpCsRaw = await Promise.all(wpNames.map(n => getCoords(n)));
 
-    // 유효한 것만 필터
     const validNames = [], validCs = [];
     wpNames.forEach((n, i) => { if (wpCsRaw[i]) { validNames.push(n); validCs.push(wpCsRaw[i]); } });
 
@@ -539,6 +616,7 @@ function drawMap(cs, names) {
   kcs.forEach(c => bounds.extend(c));
   kakaoMap.setBounds(bounds);
   document.getElementById('mapEmpty').classList.add('hide');
+  kakao.maps.event.addListener(kakaoMap, 'click', openMapFullscreen);
 }
 
 // ── RESULT ──
@@ -575,19 +653,54 @@ function showResult(names, cs, optD, savings, totalMin) {
 
 function closeSheet() { document.getElementById('sheet').classList.remove('open'); }
 
-function openNavi() {
+// ── 카카오내비 ──
+function openKakaoNavi() {
   if (!result) return;
-  const { ordNames } = result;
-  const dest = encodeURIComponent(ordNames[ordNames.length-1]);
-  if (/Android|iPhone/i.test(navigator.userAgent)) {
-    window.location.href = `kakaomap://route?ep=${dest}&by=CAR`;
-    setTimeout(() => window.open(`https://map.kakao.com/link/to/${dest}`,'_blank'), 1500);
-  } else {
-    window.open(`https://map.kakao.com/link/to/${dest}`,'_blank');
+  const { ordNames, ordCs } = result;
+
+  const destIdx = ordNames.length - 1;
+  const destName = ordNames[destIdx];
+  const destC = ordCs[destIdx];
+
+  const viaPoints = [];
+  for (let i = 1; i < destIdx; i++) {
+    viaPoints.push({ name: ordNames[i], x: ordCs[i].lng, y: ordCs[i].lat });
+  }
+
+  if (!window.Kakao) { alert('카카오 SDK가 로드되지 않았습니다.'); return; }
+  if (!Kakao.isInitialized()) {
+    Kakao.init(KAKAO_KEY);
+  }
+
+  try {
+    const naviParams = {
+      name: destName,
+      x: destC.lng,
+      y: destC.lat,
+      coordType: 'wgs84'
+    };
+    if (viaPoints.length > 0) {
+      naviParams.viaPoints = viaPoints.map(p => ({ name: p.name, x: p.x, y: p.y }));
+    }
+    Kakao.Navi.start(naviParams);
+  } catch(e) {
+    alert('카카오내비 실행 실패: ' + e.message);
   }
 }
 
-// ── START ──
+// ── 지도 전체화면 ──
+function openMapFullscreen() {
+  if (!result) return;
+  const mapEl = document.getElementById('map');
+  mapEl.classList.add('fullscreen');
+  setTimeout(() => kakaoMap.relayout(), 300);
+}
+function closeMapFullscreen() {
+  const mapEl = document.getElementById('map');
+  mapEl.classList.remove('fullscreen');
+  setTimeout(() => kakaoMap.relayout(), 300);
+}
+
 window.onload = function() {
   document.getElementById('sheet').classList.remove('open');
   initApp();
