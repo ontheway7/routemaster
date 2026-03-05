@@ -21,7 +21,7 @@
 <meta name="apple-mobile-web-app-title" content="루트마스터">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d1117">
-<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22%EB%A3%A8%ED%8A%B8%EB%A7%88%EC%8A%A4%ED%84%B0%22%2C%22short_name%22%3A%22%EB%A3%A8%ED%8A%B8%EB%A7%88%EC%8A%A4%ED%84%B0%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230d1117%22%2C%22theme_color%22%3A%22%230d1117%22%2C%22start_url%22%3A%22.%22%7D">
+<link rel="manifest" href="manifest.json">
 <title>루트마스터</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
@@ -1202,6 +1202,11 @@ function deleteRoute(e, idx) {
 }
 
 window.onload = initApp;
+
+// PWA Service Worker 등록
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 </script>
 </body>
 </html>
