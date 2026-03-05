@@ -2,6 +2,7 @@
   루트마스터 (Route Master)
   v1.0 - 2026.03.05  최초 완성 버전
   v1.1 - 2026.03.05  dist() 도로보정계수 1.25 적용
+  v2.0 - 2026.03.05  내 장소 / 내 루트 기능 추가 (localStorage)
 -->
 
 <!DOCTYPE html>
@@ -30,6 +31,11 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--bg); border-bottom:1px solid var(--border); flex-shrink:0; z-index:10; }
 .logo { font-family:'Black Han Sans',sans-serif; font-size:1.3rem; letter-spacing:2px; color:var(--accent); }
 .logo span { color:var(--text); }
+
+/* v2.0 추가: 헤더 버튼 */
+.header-btns { display:flex; gap:6px; }
+.btn-header { background:var(--card); border:1px solid var(--border); color:var(--muted); padding:6px 10px; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:0.75rem; cursor:pointer; transition:all 0.15s; }
+.btn-header:hover { border-color:var(--accent); color:var(--accent); }
 
 /* MAP */
 #map { flex:1; position:relative; background:var(--surface); min-height:0; transition:all 0.3s ease; cursor:pointer; }
@@ -61,9 +67,13 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .fdot.e { background:var(--accent2); }
 .fline { width:2px; height:14px; background:var(--border); margin-left:4px; flex-shrink:0; }
 .iw { position:relative; flex:1; }
-.fi { width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-family:'Noto Sans KR',sans-serif; font-size:0.88rem; outline:none; transition:border-color 0.2s; }
+.fi { width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 36px 10px 12px; color:var(--text); font-family:'Noto Sans KR',sans-serif; font-size:0.88rem; outline:none; transition:border-color 0.2s; }
 .fi:focus { border-color:var(--accent); }
 .fi::placeholder { color:var(--muted); }
+
+/* v2.0 추가: 즐겨찾기 버튼 */
+.btn-fav-pick { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1rem; padding:2px; opacity:0.5; transition:opacity 0.15s; z-index:2; }
+.btn-fav-pick:hover { opacity:1; }
 
 /* AUTOCOMPLETE */
 .ac-list { position:absolute; left:0; right:0; top:calc(100% + 4px); background:var(--card); border:1px solid var(--accent3); border-radius:10px; overflow:hidden; z-index:999; box-shadow:0 8px 24px rgba(0,0,0,0.5); display:none; }
@@ -72,6 +82,17 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .ac-item:hover, .ac-item:active { background:var(--surface); }
 .ac-name { font-weight:500; font-size:0.88rem; }
 .ac-addr { font-size:0.73rem; color:var(--muted); margin-top:2px; }
+
+/* v2.0 추가: 즐겨찾기 픽커 드롭다운 */
+.fav-picker { position:absolute; left:0; right:0; top:calc(100% + 4px); background:var(--card); border:1px solid var(--accent); border-radius:10px; overflow:hidden; z-index:1000; box-shadow:0 8px 24px rgba(0,0,0,0.6); display:none; max-height:200px; overflow-y:auto; }
+.fav-picker.show { display:block; }
+.fav-picker-empty { padding:14px; text-align:center; color:var(--muted); font-size:0.78rem; line-height:1.7; }
+.fav-pick-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.15s; }
+.fav-pick-item:last-child { border-bottom:none; }
+.fav-pick-item:hover { background:var(--surface); }
+.fav-pick-icon { font-size:1.2rem; flex-shrink:0; }
+.fav-pick-name { font-size:0.88rem; font-weight:500; }
+.fav-pick-addr { font-size:0.7rem; color:var(--muted); margin-top:1px; }
 
 /* STOPS */
 .stops { padding:0 16px 2px; }
@@ -95,11 +116,20 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .opt { padding:5px 11px; border:1px solid var(--border); background:var(--card); color:var(--muted); border-radius:20px; font-family:'Noto Sans KR',sans-serif; font-size:0.73rem; cursor:pointer; transition:all 0.15s; }
 .opt.on { border-color:var(--accent); color:var(--accent); background:rgba(240,180,41,0.1); }
 
-/* CTA */
-.cta { padding:6px 16px 14px; }
-.btn-go { width:100%; padding:13px; background:var(--accent); border:none; border-radius:12px; color:#000; font-family:'Black Han Sans',sans-serif; font-size:1.05rem; letter-spacing:2px; cursor:pointer; transition:all 0.2s; }
+/* v2.0 추가: 루트 저장 이름 입력바 */
+.route-name-bar { margin:0 16px 8px; display:none; gap:8px; }
+.route-name-bar.show { display:flex; }
+.route-name-input { flex:1; background:var(--card); border:1px solid var(--accent3); border-radius:8px; padding:9px 12px; color:var(--text); font-family:'Noto Sans KR',sans-serif; font-size:0.85rem; outline:none; }
+.route-name-input::placeholder { color:var(--muted); }
+.btn-route-confirm { padding:9px 14px; background:var(--accent3); border:none; border-radius:8px; color:#000; font-family:'Black Han Sans',sans-serif; font-size:0.82rem; cursor:pointer; white-space:nowrap; }
+
+/* v2.0 변경: CTA 영역 (버튼 두 개) */
+.cta-row { padding:6px 16px 14px; display:flex; gap:8px; }
+.btn-go { flex:1; padding:13px; background:var(--accent); border:none; border-radius:12px; color:#000; font-family:'Black Han Sans',sans-serif; font-size:1.05rem; letter-spacing:2px; cursor:pointer; transition:all 0.2s; }
 .btn-go:active { transform:scale(0.98); }
 .btn-go:disabled { background:var(--border); color:var(--muted); cursor:not-allowed; }
+.btn-save-route { padding:13px 12px; background:var(--card); border:1px solid var(--border); border-radius:12px; color:var(--muted); font-family:'Noto Sans KR',sans-serif; font-size:0.78rem; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+.btn-save-route:hover { border-color:var(--accent3); color:var(--accent3); }
 
 /* RESULT SHEET */
 .sheet { position:absolute; bottom:0; left:0; right:0; background:var(--bg); border-top:1px solid var(--border); border-radius:20px 20px 0 0; max-height:62vh; overflow-y:auto; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); z-index:20; padding-bottom:16px; }
@@ -132,6 +162,47 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .spinner { width:38px; height:38px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
 .loading-text { color:var(--muted); font-size:0.83rem; }
+
+/* v2.0 추가: 모달 */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:none; align-items:flex-end; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--bg); border-radius:20px 20px 0 0; width:100%; max-width:480px; max-height:85vh; display:flex; flex-direction:column; border-top:1px solid var(--border); animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1); }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px 10px; }
+.modal-title { font-family:'Black Han Sans',sans-serif; font-size:1.05rem; color:var(--accent); letter-spacing:1px; }
+.modal-body { flex:1; overflow-y:auto; padding:0 16px 24px; }
+.tabs { display:flex; gap:6px; margin-bottom:14px; }
+.tab { flex:1; padding:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:0.8rem; cursor:pointer; text-align:center; transition:all 0.15s; }
+.tab.on { border-color:var(--accent); color:var(--accent); background:rgba(240,180,41,0.1); }
+.place-list { display:flex; flex-direction:column; gap:6px; }
+.place-item { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; transition:all 0.15s; }
+.place-item:hover { border-color:var(--accent3); }
+.place-icon { font-size:1.3rem; flex-shrink:0; }
+.place-info { flex:1; min-width:0; }
+.place-name { font-weight:500; font-size:0.88rem; }
+.place-addr { font-size:0.72rem; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.btn-place-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.9rem; padding:4px; transition:color 0.15s; flex-shrink:0; }
+.btn-place-del:hover { color:var(--accent2); }
+.place-empty { text-align:center; padding:32px 16px; color:var(--muted); font-size:0.82rem; line-height:1.9; }
+.place-empty-icon { font-size:2rem; margin-bottom:8px; }
+.add-place-form { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
+.form-label { font-size:0.78rem; color:var(--muted); margin-bottom:8px; display:block; }
+.icon-picker { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+.icon-opt { width:36px; height:36px; border:1.5px solid var(--border); border-radius:8px; background:var(--card); font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.icon-opt.on { border-color:var(--accent); background:rgba(240,180,41,0.15); }
+.add-place-input { width:100%; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-family:'Noto Sans KR',sans-serif; font-size:0.85rem; outline:none; margin-bottom:8px; transition:border-color 0.2s; }
+.add-place-input:focus { border-color:var(--accent); }
+.add-place-input::placeholder { color:var(--muted); }
+.btn-add-place { width:100%; padding:10px; background:var(--accent); border:none; border-radius:8px; color:#000; font-family:'Black Han Sans',sans-serif; font-size:0.9rem; letter-spacing:1px; cursor:pointer; margin-top:4px; }
+.route-item { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+.route-item:hover { border-color:var(--accent3); }
+.route-item-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.route-item-name { font-weight:500; font-size:0.88rem; }
+.route-item-meta { font-size:0.7rem; color:var(--muted); }
+.route-stops { display:flex; flex-wrap:wrap; gap:4px; }
+.route-stop-tag { padding:3px 8px; background:var(--surface); border:1px solid var(--border); border-radius:12px; font-size:0.7rem; color:var(--muted); }
+.route-stop-tag.s { border-color:var(--green); color:var(--green); }
+.route-stop-tag.e { border-color:var(--accent2); color:var(--accent2); }
 </style>
 </head>
 <body>
@@ -139,7 +210,11 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   <!-- Header -->
   <div class="header">
     <div class="logo">루트<span>마스터</span></div>
-
+    <!-- v2.0 추가 -->
+    <div class="header-btns">
+      <button class="btn-header" onclick="openModal('places')">📌 내 장소</button>
+      <button class="btn-header" onclick="openModal('routes')">🗂️ 내 루트</button>
+    </div>
   </div>
 
   <!-- Map -->
@@ -166,7 +241,10 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
         <div class="fdot s"></div>
         <div class="iw">
           <input class="fi" id="fi-start" placeholder="출발지 (예: 광화문역)" autocomplete="off">
+          <!-- v2.0 추가 -->
+          <button class="btn-fav-pick" onclick="toggleFavPicker('start')" title="내 장소에서 선택">⭐</button>
           <div class="ac-list" id="ac-start"></div>
+          <div class="fav-picker" id="fav-start"></div>
         </div>
         <button class="btn-loc" id="btnLoc" onclick="useCurrentLocation()" title="현재 위치 사용">📍</button>
       </div>
@@ -175,7 +253,10 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
         <div class="fdot e"></div>
         <div class="iw">
           <input class="fi" id="fi-end" placeholder="도착지" autocomplete="off">
+          <!-- v2.0 추가 -->
+          <button class="btn-fav-pick" onclick="toggleFavPicker('end')" title="내 장소에서 선택">⭐</button>
           <div class="ac-list" id="ac-end"></div>
+          <div class="fav-picker" id="fav-end"></div>
         </div>
       </div>
     </div>
@@ -189,8 +270,16 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
       <button class="opt" id="opt-return" onclick="togOpt('return')">🔄 출발지복귀</button>
     </div>
 
-    <div class="cta">
+    <!-- v2.0 추가: 루트 이름 입력바 -->
+    <div class="route-name-bar" id="routeNameBar">
+      <input class="route-name-input" id="routeNameInput" placeholder="루트 이름 (예: 주말 원주행)" maxlength="20">
+      <button class="btn-route-confirm" onclick="confirmSaveRoute()">저장</button>
+    </div>
+
+    <!-- v2.0 변경: .cta → .cta-row, 루트저장 버튼 추가 -->
+    <div class="cta-row">
       <button class="btn-go" id="btnGo" onclick="optimize()">🔍 경로 최적화</button>
+      <button class="btn-save-route" onclick="toggleRouteSave()">🗂️ 루트저장</button>
     </div>
   </div>
 
@@ -215,6 +304,17 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
   <div class="loading" id="loading">
     <div class="spinner"></div>
     <div class="loading-text" id="loadingText">경로 계산 중...</div>
+  </div>
+</div>
+
+<!-- v2.0 추가: 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="btn-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
 
@@ -438,7 +538,9 @@ function renderStops() {
       <div class="sbadge">${i+1}</div>
       <div class="iw" style="flex:1">
         <input class="fi" id="fi-s${stop.id}" value="${stop.name}" placeholder="경유지 ${i+1}" autocomplete="off">
+        <button class="btn-fav-pick" onclick="toggleFavPickerStop(${stop.id})" title="내 장소에서 선택">⭐</button>
         <div class="ac-list" id="${acId}"></div>
+        <div class="fav-picker" id="fav-stop-${stop.id}"></div>
       </div>
       <button class="btn-del" onclick="removeStop(${stop.id})">✕</button>
     `;
@@ -712,6 +814,233 @@ function closeMapFullscreen() {
   const mapEl = document.getElementById('map');
   mapEl.classList.remove('fullscreen');
   setTimeout(() => kakaoMap.relayout(), 300);
+}
+
+// ────────────────────────────────────────
+// v2.0 추가: 내 장소 / 내 루트
+// ────────────────────────────────────────
+
+const LS_PLACES = 'rm_places_v2';
+const LS_ROUTES = 'rm_routes_v2';
+const ICONS = ['🏠','🌳','🍜','☕','⛽','🏪','🏥','🏋️','📍','🎯','🏖️','🏔️','🛒','🎪','🏢'];
+let selectedIcon = '📍';
+let addPlaceCoords = null;
+let addPlaceAcTimer = null;
+
+function loadPlaces() { try { return JSON.parse(localStorage.getItem(LS_PLACES)) || []; } catch { return []; } }
+function savePlaces(a) { localStorage.setItem(LS_PLACES, JSON.stringify(a)); }
+function loadRoutes() { try { return JSON.parse(localStorage.getItem(LS_ROUTES)) || []; } catch { return []; } }
+function saveRoutes(a) { localStorage.setItem(LS_ROUTES, JSON.stringify(a)); }
+
+function toggleFavPicker(type) {
+  const picker = document.getElementById('fav-' + type);
+  const isOpen = picker.classList.contains('show');
+  closeAllPickers();
+  if (!isOpen) { renderFavPicker(picker, type); picker.classList.add('show'); }
+}
+
+function toggleFavPickerStop(stopId) {
+  const picker = document.getElementById('fav-stop-' + stopId);
+  const isOpen = picker.classList.contains('show');
+  closeAllPickers();
+  if (!isOpen) { renderFavPicker(picker, 'stop-' + stopId); picker.classList.add('show'); }
+}
+
+function closeAllPickers() {
+  document.querySelectorAll('.fav-picker').forEach(p => p.classList.remove('show'));
+}
+
+function renderFavPicker(picker, type) {
+  const places = loadPlaces();
+  if (!places.length) {
+    picker.innerHTML = `<div class="fav-picker-empty">저장된 장소가 없어요<br><small>📌 내 장소에서 추가하세요</small></div>`;
+    return;
+  }
+  picker.innerHTML = places.map((p, i) => `
+    <div class="fav-pick-item" onclick="selectFavPlace('${type}', ${i})">
+      <div class="fav-pick-icon">${p.icon}</div>
+      <div><div class="fav-pick-name">${p.name}</div><div class="fav-pick-addr">${p.addr}</div></div>
+    </div>`).join('');
+}
+
+function selectFavPlace(type, idx) {
+  const p = loadPlaces()[idx]; if (!p) return;
+  if (type === 'start') document.getElementById('fi-start').value = p.name;
+  else if (type === 'end') document.getElementById('fi-end').value = p.name;
+  else {
+    const stopId = parseInt(type.replace('stop-', ''));
+    const stop = stops.find(s => s.id === stopId);
+    if (stop) { stop.name = p.name; const el = document.getElementById('fi-s' + stopId); if (el) el.value = p.name; }
+  }
+  if (p.lat && p.lng) coords[p.name] = { lat: p.lat, lng: p.lng };
+  closeAllPickers();
+}
+
+document.addEventListener('click', e => { if (!e.target.closest('.iw')) closeAllPickers(); });
+
+function toggleRouteSave() {
+  const bar = document.getElementById('routeNameBar');
+  const show = bar.classList.toggle('show');
+  if (show) document.getElementById('routeNameInput').focus();
+}
+
+function confirmSaveRoute() {
+  const name = document.getElementById('routeNameInput').value.trim();
+  if (!name) { alert('루트 이름을 입력해주세요'); return; }
+  const start = document.getElementById('fi-start').value.trim();
+  if (!start) { alert('출발지를 입력해주세요'); return; }
+  const end = document.getElementById('fi-end').value.trim();
+  const routes = loadRoutes();
+  routes.unshift({ id: Date.now(), name, start, end, stops: stops.map(s => s.name).filter(Boolean), createdAt: new Date().toLocaleDateString('ko-KR') });
+  saveRoutes(routes);
+  document.getElementById('routeNameBar').classList.remove('show');
+  document.getElementById('routeNameInput').value = '';
+  showStatus('✅ 루트 저장 완료!'); setTimeout(hideStatus, 2000);
+}
+
+function openModal(type) {
+  document.getElementById('modalTitle').textContent = type === 'places' ? '📌 내 장소' : '🗂️ 내 루트';
+  type === 'places' ? renderPlacesModal() : renderRoutesModal();
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+function renderPlacesModal() {
+  const places = loadPlaces();
+  document.getElementById('modalBody').innerHTML = `
+    <div class="tabs">
+      <button class="tab on" id="tab-list" onclick="switchPlaceTab('list')">저장된 장소 (${places.length})</button>
+      <button class="tab" id="tab-add" onclick="switchPlaceTab('add')">＋ 새 장소 추가</button>
+    </div>
+    <div id="place-list-view">
+      ${places.length === 0
+        ? `<div class="place-empty"><div class="place-empty-icon">📌</div>자주 가는 장소를 저장해두면<br>⭐ 버튼으로 바로 선택할 수 있어요</div>`
+        : `<div class="place-list">${places.map((p, i) => `
+            <div class="place-item">
+              <div class="place-icon">${p.icon}</div>
+              <div class="place-info"><div class="place-name">${p.name}</div><div class="place-addr">${p.addr}</div></div>
+              <button class="btn-place-del" onclick="deletePlace(event,${i})">🗑️</button>
+            </div>`).join('')}</div>`}
+    </div>
+    <div id="place-add-view" style="display:none">
+      <div class="add-place-form">
+        <span class="form-label">아이콘 선택</span>
+        <div class="icon-picker" id="iconPicker">
+          ${ICONS.map(ic => `<div class="icon-opt${ic === selectedIcon ? ' on' : ''}" onclick="selectIcon('${ic}')">${ic}</div>`).join('')}
+        </div>
+        <input class="add-place-input" id="addPlaceName" placeholder="장소 이름 (예: 우리집, 전원주택)" maxlength="20">
+        <div style="position:relative">
+          <input class="add-place-input" id="addPlaceAddr" placeholder="주소 검색" autocomplete="off" style="margin-bottom:0">
+          <div class="ac-list" id="ac-add-place" style="z-index:1001"></div>
+        </div>
+        <button class="btn-add-place" onclick="saveNewPlace()" style="margin-top:8px">📌 장소 저장</button>
+      </div>
+    </div>`;
+  setupAddPlaceAC();
+}
+
+function switchPlaceTab(tab) {
+  document.getElementById('tab-list').classList.toggle('on', tab === 'list');
+  document.getElementById('tab-add').classList.toggle('on', tab === 'add');
+  document.getElementById('place-list-view').style.display = tab === 'list' ? '' : 'none';
+  document.getElementById('place-add-view').style.display = tab === 'add' ? '' : 'none';
+  if (tab === 'add') { addPlaceCoords = null; setupAddPlaceAC(); }
+}
+
+function selectIcon(ic) {
+  selectedIcon = ic;
+  document.querySelectorAll('.icon-opt').forEach(el => el.classList.toggle('on', el.textContent === ic));
+}
+
+function setupAddPlaceAC() {
+  const input = document.getElementById('addPlaceAddr');
+  const acEl = document.getElementById('ac-add-place');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const val = input.value.trim();
+    if (val.length < 2) { acEl.style.display = 'none'; return; }
+    clearTimeout(addPlaceAcTimer);
+    addPlaceAcTimer = setTimeout(() => {
+      if (!ps) return;
+      ps.keywordSearch(val, (data, status) => {
+        if (status !== kakao.maps.services.Status.OK || !data.length) { acEl.style.display = 'none'; return; }
+        acEl.innerHTML = '';
+        data.slice(0, 5).forEach(p => {
+          const item = document.createElement('div'); item.className = 'ac-item';
+          item.innerHTML = `<div class="ac-name">${p.place_name}</div><div class="ac-addr">${p.road_address_name || p.address_name}</div>`;
+          item.addEventListener('mousedown', e => {
+            e.preventDefault();
+            input.value = p.place_name;
+            addPlaceCoords = { lat: parseFloat(p.y), lng: parseFloat(p.x) };
+            acEl.style.display = 'none';
+          });
+          acEl.appendChild(item);
+        });
+        acEl.style.display = 'block';
+      });
+    }, 250);
+  });
+  input.addEventListener('blur', () => setTimeout(() => acEl.style.display = 'none', 200));
+}
+
+function saveNewPlace() {
+  const name = document.getElementById('addPlaceName').value.trim();
+  const addr = document.getElementById('addPlaceAddr').value.trim();
+  if (!name) { alert('장소 이름을 입력해주세요'); return; }
+  if (!addr) { alert('주소를 입력해주세요'); return; }
+  const places = loadPlaces();
+  places.push({ icon: selectedIcon, name, addr, lat: addPlaceCoords ? addPlaceCoords.lat : null, lng: addPlaceCoords ? addPlaceCoords.lng : null });
+  savePlaces(places);
+  if (addPlaceCoords) coords[name] = addPlaceCoords;
+  showStatus(`✅ "${name}" 저장 완료!`); setTimeout(hideStatus, 2000);
+  renderPlacesModal();
+}
+
+function deletePlace(e, idx) {
+  e.stopPropagation();
+  const places = loadPlaces();
+  if (!confirm(`"${places[idx].name}"을 삭제할까요?`)) return;
+  places.splice(idx, 1); savePlaces(places); renderPlacesModal();
+}
+
+function renderRoutesModal() {
+  const routes = loadRoutes();
+  document.getElementById('modalBody').innerHTML = routes.length === 0
+    ? `<div class="place-empty"><div class="place-empty-icon">🗂️</div>저장된 루트가 없어요<br>경로 설정 후 "루트저장" 버튼을 눌러보세요</div>`
+    : routes.map((r, i) => `
+      <div class="route-item" onclick="loadRoute(${i})">
+        <div class="route-item-head">
+          <div class="route-item-name">📍 ${r.name}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="route-item-meta">${r.createdAt}</span>
+            <button class="btn-place-del" onclick="deleteRoute(event,${i})">🗑️</button>
+          </div>
+        </div>
+        <div class="route-stops">
+          <span class="route-stop-tag s">출 ${r.start}</span>
+          ${r.stops.map(s => `<span class="route-stop-tag">· ${s}</span>`).join('')}
+          ${r.end ? `<span class="route-stop-tag e">착 ${r.end}</span>` : ''}
+        </div>
+      </div>`).join('');
+}
+
+function loadRoute(idx) {
+  const r = loadRoutes()[idx];
+  document.getElementById('fi-start').value = r.start;
+  document.getElementById('fi-end').value = r.end || '';
+  stops = []; sid = 0;
+  r.stops.forEach(name => { sid++; stops.push({ id: sid, name }); });
+  renderStops();
+  closeModal();
+  showStatus(`✅ "${r.name}" 불러오기 완료`); setTimeout(hideStatus, 2000);
+}
+
+function deleteRoute(e, idx) {
+  e.stopPropagation();
+  const routes = loadRoutes();
+  if (!confirm(`"${routes[idx].name}" 루트를 삭제할까요?`)) return;
+  routes.splice(idx, 1); saveRoutes(routes); renderRoutesModal();
 }
 
 window.onload = initApp;
