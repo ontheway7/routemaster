@@ -10,6 +10,7 @@
   v3.3 - 2026.03.05  내 위치 추적 방식 변경 - 지도가 내 위치를 계속 따라옴
   v3.4 - 2026.03.05  PWA 전체화면 지원 (홈화면 추가 시 주소창 제거)
   v3.5 - 2026.03.05  내 위치 파란 점에 실시간 나침반 방향 화살표 추가
+  v3.6 - 2026.03.05  화살표 방향/모양 개선, 초기 지도 한반도 중심으로 변경
 -->
 
 <!DOCTYPE html>
@@ -171,10 +172,10 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 #map.fullscreen .btn-myloc { display:flex; }
 .btn-myloc.tracking { border-color:var(--accent); background:rgba(240,180,41,0.15); }
 /* v3.0 추가: 내 위치 마커 (파란 점 + 방향 화살표) */
-.my-loc-wrap { position:relative; width:36px; height:36px; display:flex; align-items:center; justify-content:center; }
-.my-loc-dot { width:18px; height:18px; background:#4A90E2; border:3px solid #fff; border-radius:50%; box-shadow:0 0 0 4px rgba(74,144,226,0.3); position:relative; z-index:2; }
+.my-loc-wrap { position:relative; width:28px; height:44px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+.my-loc-dot { width:18px; height:18px; background:#4A90E2; border:3px solid #fff; border-radius:50%; box-shadow:0 0 0 4px rgba(74,144,226,0.3); position:relative; z-index:2; flex-shrink:0; }
 .my-loc-dot::after { content:''; position:absolute; inset:-6px; border-radius:50%; background:rgba(74,144,226,0.15); animation:locPulse 2s ease-out infinite; }
-.my-loc-arrow { position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:12px solid #4A90E2; transform-origin:bottom center; z-index:3; transition:transform 0.3s ease; }
+.my-loc-arrow { width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:18px solid #4A90E2; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3)); transform-origin:center 26px; z-index:3; flex-shrink:0; margin-bottom:-2px; }
 @keyframes locPulse { 0%{transform:scale(1);opacity:1} 100%{transform:scale(2.5);opacity:0} }
 .loading { position:absolute; inset:0; background:rgba(13,17,23,0.85); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:30; gap:10px; }
 .loading.show { display:flex; }
@@ -382,7 +383,7 @@ async function initApp() {
 
     // 지도 초기화
     const container = document.getElementById('map');
-    const options = { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 8 };
+    const options = { center: new kakao.maps.LatLng(36.5, 127.5), level: 13 };
     kakaoMap = new kakao.maps.Map(container, options);
     ps = new kakao.maps.services.Places();
     geocoder = new kakao.maps.services.Geocoder();
@@ -948,7 +949,7 @@ function onCompass(e) {
     ? e.webkitCompassHeading        // iOS: 정북 기준 시계방향
     : (360 - (e.alpha || 0)) % 360; // Android
   // 화살표는 위쪽(정북)이 기본, heading만큼 회전
-  myArrowEl.style.transform = `translateX(-50%) rotate(${heading}deg)`;
+  myArrowEl.style.transform = `rotate(${heading}deg)`;
 }
 
 // v3.0 추가: 가로/세로 전환 시 지도 relayout
