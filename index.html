@@ -862,8 +862,11 @@ function openMapFullscreen() {
         kakaoMap.setCenter(new kakao.maps.LatLng(startC.lat, startC.lng));
         kakaoMap.setLevel(4);
       }
-      // 내 위치 없으면 한반도 전체 뷰 그대로
-    }
+      // 내 위치 없으면 한반도 전체 뷰 중앙으로
+      } else {
+        kakaoMap.setCenter(new kakao.maps.LatLng(36.5, 127.5));
+        kakaoMap.setLevel(13);
+      }
   }, 300);
 }
 function closeMapFullscreen() {
