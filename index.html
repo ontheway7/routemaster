@@ -385,7 +385,7 @@ async function initApp() {
 
     // 지도 초기화
     const container = document.getElementById('map');
-    const options = { center: new kakao.maps.LatLng(36.5, 127.5), level: 13 };
+    const options = { center: new kakao.maps.LatLng(50.0, 132.0), level: 13 };
     kakaoMap = new kakao.maps.Map(container, options);
     ps = new kakao.maps.services.Places();
     geocoder = new kakao.maps.services.Geocoder();
@@ -426,7 +426,7 @@ async function initApp() {
     // 초기 경유지 세팅
     stops = []; sid = 0;
     document.getElementById('stopsEl').innerHTML = '';
-    ['경주불국사50.0','안동하회마을'].forEach(n => addStop(n));
+    ['경주불국사50.0, 132.0','안동하회마을'].forEach(n => addStop(n));
     // opts 버튼 초기 동기화
     Object.keys(opts).forEach(k => {
       document.getElementById('opt-' + k).classList.toggle('on', opts[k]);
@@ -864,7 +864,7 @@ function openMapFullscreen() {
       }
       // 내 위치 없으면 한반도 전체 뷰 중앙으로
       } else {
-        kakaoMap.setCenter(new kakao.maps.LatLng(50.0, 130.0));
+        kakaoMap.setCenter(new kakao.maps.LatLng(50.0, 132.0));
         kakaoMap.setLevel(13);
       }
   }, 300);
@@ -1297,6 +1297,7 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
