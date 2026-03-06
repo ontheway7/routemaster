@@ -924,6 +924,9 @@ function startMyLocation(following = true) {
           zIndex: 10
         });
         myArrowEl = wrap.querySelector('#myLocArrow');
+        // 첫 수신 시 항상 내 위치로 이동 + level 3으로 확대
+        kakaoMap.setCenter(latlng);
+        kakaoMap.setLevel(3);
       } else {
         myLocMarker.setPosition(latlng);
       }
