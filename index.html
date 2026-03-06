@@ -854,10 +854,8 @@ function openMapFullscreen() {
   mapEl.classList.add('fullscreen');
   setTimeout(() => {
     kakaoMap.relayout();
-    // 경로 최적화 전이면 파란 점 자동 시작 (지도 따라오기 OFF)
-    if (!result && !myLocTracking) {
-      startMyLocation(false);
-    }
+    // 경로 최적화 전이면 100m 레벨로만 조정 (내 위치 찾기 없음)
+    if (!result) kakaoMap.setLevel(5);
   }, 300);
 }
 function closeMapFullscreen() {
