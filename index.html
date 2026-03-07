@@ -14,6 +14,7 @@
   v3.7 - 2026.03.05  경유지 없이도 최적화 실행, 도보 모드 진입 시 줌 레벨 개선
   v3.8 - 2026.03.05  경로 최적화 전 지도 탭 시 파란 점 자동 표시, 빨간 버튼 ON/OFF로 지도 따라오기 제어
   v3.9 - 2026.03.07  결과 시트 열린 상태에서 백버튼 → 시트 닫기
+  v3.10 - 2026.03.07 자동완성 목록에서 📌 버튼으로 내 장소 바로 저장
 -->
 
 <!DOCTYPE html>
@@ -96,6 +97,8 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .ac-item:hover, .ac-item:active { background:var(--surface); }
 .ac-name { font-weight:500; font-size:0.88rem; }
 .ac-addr { font-size:0.73rem; color:var(--muted); margin-top:2px; }
+.ac-save { background:none; border:none; cursor:pointer; font-size:0.95rem; padding:4px 6px; opacity:0.35; transition:opacity 0.15s; flex-shrink:0; line-height:1; }
+.ac-save:hover { opacity:1; }
 
 /* v2.0 추가: 즐겨찾기 픽커 드롭다운 */
 .fav-picker { position:absolute; left:0; right:0; top:calc(100% + 4px); background:var(--card); border:1px solid var(--accent); border-radius:10px; overflow:hidden; z-index:1000; box-shadow:0 8px 24px rgba(0,0,0,0.6); display:none; max-height:200px; overflow-y:auto; }
@@ -428,10 +431,7 @@ async function initApp() {
     // 초기 경유지 세팅
     stops = []; sid = 0;
     document.getElementById('stopsEl').innerHTML = '';
-    //['경주불국사','안동하회마을'].forEach(n => addStop(n));
-    addStop();
-    addStop();
-    
+    ['경주불국사','안동하회마을'].forEach(n => addStop(n));
     // opts 버튼 초기 동기화
     Object.keys(opts).forEach(k => {
       document.getElementById('opt-' + k).classList.toggle('on', opts[k]);
@@ -539,8 +539,27 @@ function doSearch(query, acEl, input) {
     data.slice(0, 5).forEach(p => {
       const item = document.createElement('div');
       item.className = 'ac-item';
-      item.innerHTML = `<div class="ac-name">${p.place_name}</div><div class="ac-addr">${p.road_address_name || p.address_name}</div>`;
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+      item.style.justifyContent = 'space-between';
+      item.style.gap = '4px';
+      const info = document.createElement('div');
+      info.style.flex = '1';
+      info.style.minWidth = '0';
+      info.innerHTML = `<div class="ac-name">${p.place_name}</div><div class="ac-addr">${p.road_address_name || p.address_name}</div>`;
+      const pin = document.createElement('button');
+      pin.className = 'ac-save';
+      pin.textContent = '📌';
+      pin.title = '내 장소로 저장';
+      pin.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        saveToMyPlace(p);
+      });
+      item.appendChild(info);
+      item.appendChild(pin);
       item.addEventListener('mousedown', (e) => {
+        if (e.target === pin) return;
         e.preventDefault();
         input.value = p.place_name;
         coords[p.place_name] = { lat: parseFloat(p.y), lng: parseFloat(p.x) };
@@ -1293,6 +1312,21 @@ function deleteRoute(e, idx) {
   routes.splice(idx, 1); saveRoutes(routes); renderRoutesModal();
 }
 
+// v3.10: 자동완성에서 내 장소 바로 저장
+function saveToMyPlace(p) {
+  const places = loadPlaces();
+  const name = p.place_name;
+  const addr = p.road_address_name || p.address_name;
+  if (places.some(x => x.name === name)) {
+    showStatus(`"${name}"은 이미 저장되어 있어요`); setTimeout(hideStatus, 2000);
+    return;
+  }
+  places.push({ icon: '📍', name, addr, lat: parseFloat(p.y), lng: parseFloat(p.x) });
+  savePlaces(places);
+  coords[name] = { lat: parseFloat(p.y), lng: parseFloat(p.x) };
+  showStatus(`✅ "${name}" 내 장소로 저장!`); setTimeout(hideStatus, 2000);
+}
+
 // v3.9: 결과 시트 열린 상태에서 백버튼 → 시트 닫기
 function setupBackButtonGuard() {
   history.pushState(null, '', location.href);
@@ -1314,4 +1348,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-
