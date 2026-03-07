@@ -428,7 +428,10 @@ async function initApp() {
     // 초기 경유지 세팅
     stops = []; sid = 0;
     document.getElementById('stopsEl').innerHTML = '';
-    ['경주불국사','안동하회마을'].forEach(n => addStop(n));
+    //['경주불국사','안동하회마을'].forEach(n => addStop(n));
+    addStop();
+    addStop();
+    
     // opts 버튼 초기 동기화
     Object.keys(opts).forEach(k => {
       document.getElementById('opt-' + k).classList.toggle('on', opts[k]);
@@ -1311,3 +1314,4 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
