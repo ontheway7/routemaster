@@ -24,6 +24,7 @@
                      - 실제 도로 거리/시간 표시
                      - 경유지 최대 5개로 조정 (카카오모빌리티 API 제한)
   v4.1 - 2026.03.08  주소 검색 방식 변경
+  v4.2 - 2026.03.08  직접 주소를 타이핑하는 경우 발생하는 오류 제거
 -->
 
 <!DOCTYPE html>
@@ -253,7 +254,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 <div class="app">
   <!-- Header -->
   <div class="header">
-    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.1</small></div>
+    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.2</small></div>
     <!-- v2.0 추가 -->
     <div class="header-btns">
       <button class="btn-header" onclick="openModal('places')">📌 내 장소</button>
@@ -1308,16 +1309,18 @@ function setupAddPlaceAC() {
   input.addEventListener('blur', () => setTimeout(() => acEl.style.display = 'none', 200));
 }
 
-function saveNewPlace() {
+async function saveNewPlace() {
   const name = document.getElementById('addPlaceName').value.trim();
   const addr = document.getElementById('addPlaceAddr').value.trim();
   if (!name) { alert('장소 이름을 입력해주세요'); return; }
-  if (!addr) { alert('주소를 입력해주세요'); return; }
+  if (!addr) { alert('주소를 검색해주세요'); return; }
   const places = loadPlaces();
-  places.push({ icon: selectedIcon, name, addr, lat: addPlaceCoords ? addPlaceCoords.lat : null, lng: addPlaceCoords ? addPlaceCoords.lng : null });
+  if (places.some(x => x.name === name)) { alert(`"${name}"은 이미 저장되어 있어요`); return; }
+  const c = addPlaceCoords || await getCoords(addr);
+  places.push({ icon: selectedIcon, name, addr, lat: c?.lat || null, lng: c?.lng || null });
   savePlaces(places);
-  if (addPlaceCoords) coords[name] = addPlaceCoords;
-  showStatus(`✅ "${name}" 저장 완료!`); setTimeout(hideStatus, 2000);
+  if (c) coords[name] = c;
+  showToast(`✅ "${name}" 저장 완료!`);
   renderPlacesModal();
 }
 
