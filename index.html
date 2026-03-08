@@ -24,7 +24,9 @@
                      - 실제 도로 거리/시간 표시
                      - 경유지 최대 5개로 조정 (카카오모빌리티 API 제한)
   v4.1 - 2026.03.08  주소 검색 방식 변경
-  v4.2 - 2026.03.08  직접 주소를 타이핑하는 경우 발생하는 오류 제거
+  v4.2 - 2026.03.08  직접 주소를 타이핑하여 내 장소로 저장할 때 이름을 띄어 쓰기를 하면 발생하는 오류 수정
+  v4.3 - 2026.03.08  구간별 거리 및 시간 표시 방식 변경(출->경->착), 소요 시간 실제 시간으로 반영
+
 -->
 
 <!DOCTYPE html>
@@ -254,7 +256,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 <div class="app">
   <!-- Header -->
   <div class="header">
-    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.2</small></div>
+    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3</small></div>
     <!-- v2.0 추가 -->
     <div class="header-btns">
       <button class="btn-header" onclick="openModal('places')">📌 내 장소</button>
@@ -877,7 +879,18 @@ async function optimize() {
 
     result = { ordNames, ordCs, optDistKm, savings, totalMin, roadCoords: roadResult.roadCoords };
     drawMap(roadResult.roadCoords, ordCs, ordNames);
-    showResult(ordNames, ordCs, optDistKm, savings, totalMin);
+    // 구간별 실제 도로 거리/시간 계산
+    document.getElementById('loadingText').textContent = '구간별 경로 계산 중...';
+    const segResults = [];
+    for (let i = 0; i < ordCs.length - 1; i++) {
+      try {
+        const seg = await fetchRoadRoute([ordCs[i], ordCs[i+1]]);
+        segResults.push({ distKm: (seg.distanceM/1000).toFixed(1), min: Math.round(seg.durationSec/60) });
+      } catch(e) {
+        segResults.push({ distKm: '-', min: '-' });
+      }
+    }
+    showResult(ordNames, ordCs, optDistKm, savings, totalMin, segResults);
 
   } catch(e) {
     alert('오류: ' + e.message);
@@ -918,7 +931,7 @@ function drawMap(roadCoords, cs, names) {
 }
 
 // ── RESULT (v4.0: 실제 도로 거리/시간 표시) ──
-function showResult(names, cs, optDistKm, savings, totalMin) {
+function showResult(names, cs, optDistKm, savings, totalMin, segResults) {
   document.getElementById('saveBar').style.display = 'flex';
   document.getElementById('btnNavi2').style.display = 'flex';
   document.getElementById('bottom').style.display = 'none';
@@ -932,9 +945,7 @@ function showResult(names, cs, optDistKm, savings, totalMin) {
   c.innerHTML = '';
   names.forEach((name, i) => {
     const isS=i===0, isE=i===names.length-1;
-    // 구간별 거리/시간은 직선거리 기반 비율로 추정 (표시용)
-    const segD = i>0 ? dist(cs[i-1],cs[i]).toFixed(1) : 0;
-    const segM = i>0 ? Math.round(segD/(opts.traffic?28:40)*60) : 0;
+    const seg = segResults && segResults[i] ? segResults[i] : null;
     const div = document.createElement('div');
     div.className = 'rstep';
     div.innerHTML = `
@@ -944,7 +955,7 @@ function showResult(names, cs, optDistKm, savings, totalMin) {
       </div>
       <div class="rc">
         <div class="rc-name">${name}</div>
-        <div class="rc-meta">${i>0?`↑ 약 ${segD}km · 약 ${segM}분`:'여기서 출발'}</div>
+        ${!isE && seg ? `<div class="rc-meta">↑ 약 ${seg.distKm}km · 약 ${seg.min}분</div>` : ''}
       </div>`;
     c.appendChild(div);
   });
