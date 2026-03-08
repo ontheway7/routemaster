@@ -909,7 +909,7 @@ function drawMap(roadCoords, cs, names) {
   const roadPath = roadCoords.map(c => new kakao.maps.LatLng(c.lat, c.lng));
   polyline = new kakao.maps.Polyline({
     map: kakaoMap, path: roadPath,
-    strokeWeight: 5, strokeColor: '#f0b429', strokeOpacity: 0.9, strokeStyle: 'solid'
+    strokeWeight: 5, strokeColor: '#00c853', strokeOpacity: 0.9, strokeStyle: 'solid'
   });
 
   // 마커는 기존과 동일하게 경유지 좌표에 표시
@@ -1470,4 +1470,5 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
