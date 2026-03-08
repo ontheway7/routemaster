@@ -16,6 +16,7 @@
   v3.9 - 2026.03.07  결과 시트 열린 상태에서 백버튼 → 시트 닫기
   v3.10 - 2026.03.07 자동완성 목록에서 📌 버튼으로 내 장소 바로 저장
   v3.11 - 2026.03.08 출발지와 도착지 박스의 간격 줄임
+  v3.12 - 2026.03.08 테마 색 변경 
 -->
 
 <!DOCTYPE html>
@@ -34,9 +35,9 @@
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 <style>
 :root {
-  --bg: #5a8c7e; --surface: #4e7d70; --card: #426e62; --border: #376058;
-  --accent: #f5e6c0; --accent2: #f08080; --accent3: #c8e8e0;
-  --text: #f0f8f5; --muted: #b8d8d0; --green: #e8f5e0;
+  --bg: #0a1628; --surface: #0f1e38; --card: #142448; --border: #1a3060;
+  --accent: #f0b429; --accent2: #ff6b6b; --accent3: #58c8ff; --green: #3fd494;
+  --text: #e8eeff; --muted: #6688aa;
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html,body { height:100%; background:var(--bg); color:var(--text); font-family:'Noto Sans KR',sans-serif; font-size:14px; }
@@ -1351,6 +1352,7 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
