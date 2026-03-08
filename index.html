@@ -955,7 +955,7 @@ function showResult(names, cs, optDistKm, savings, totalMin, segResults) {
       </div>
       <div class="rc">
         <div class="rc-name">${name}</div>
-        ${!isE && seg ? `<div class="rc-meta">↑ 약 ${seg.distKm}km · 약 ${seg.min}분</div>` : ''}
+        ${!isE && seg ? `<div class="rc-meta">↓ 약 ${seg.distKm}km · 약 ${seg.min}분</div>` : ''}
       </div>`;
     c.appendChild(div);
   });
@@ -1470,3 +1470,4 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
