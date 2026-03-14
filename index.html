@@ -31,6 +31,7 @@
   v4.3.3- 2026.03.09  길 찾기 옵션 변경 (최단 시간 추가 및 순서 조정)
   v4.3.4- 2026.03.13  색상 테마를 블루그레이 (#4a6670)로 변경
   v4.3.5- 2026.03.14  구간별 거리/시간 계산 방식 개선 (sections 활용, API 호출 감소)
+  v4.3.6- 2026.03.14  지도 고정 높이 + 자동완성 1글자부터 / debounce 단축
 
 -->
 
@@ -70,7 +71,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .btn-header:hover { border-color:var(--accent); color:var(--accent); }
 
 /* MAP */
-#map { flex:1; position:relative; background:var(--surface); min-height:0; transition:all 0.3s ease; cursor:pointer; }
+#map { flex:none; height:319px; position:relative; background:var(--surface); transition:all 0.3s ease; cursor:pointer; }
 #map.fullscreen { position:fixed; inset:0; z-index:100; max-width:100%; cursor:default; }
 .btn-map-close { position:absolute; top:12px; right:12px; z-index:101; background:rgba(13,17,23,0.85); border:1px solid var(--border); color:var(--text); width:36px; height:36px; border-radius:50%; font-size:1rem; cursor:pointer; display:none; align-items:center; justify-content:center; }
 #map.fullscreen .btn-map-close { display:flex; }
@@ -271,7 +272,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 <div class="app">
   <!-- Header -->
   <div class="header">
-    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3.5</small>
+    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3.6</small>
     </div>
     <!-- v2.0 추가 -->
     <div class="header-btns">
@@ -415,6 +416,15 @@ function loadKakaoSDK() {
 }
 
 async function initApp() {
+  // 헤더 높이만큼 map 상단 여백 동적 설정 (새로고침 포함)
+  function adjustMapTop() {
+    const h = document.querySelector('.header');
+    const m = document.getElementById('map');
+    if (h && m) m.style.paddingTop = h.offsetHeight + 'px';
+  }
+  adjustMapTop();
+  window.addEventListener('resize', adjustMapTop);
+
   document.getElementById('sheet').classList.remove('open');
   showStatus('카카오맵 로딩 중...');
   try {
@@ -550,15 +560,15 @@ function setupAC(inputId, acId) {
     isComposing = false;
     clearTimeout(acTimers[inputId]);
     const val = input.value.trim();
-    if (val.length < 2) { acEl.style.display = 'none'; return; }
-    acTimers[inputId] = setTimeout(() => doSearch(val, acEl, input), 250);
+    if (val.length < 1) { acEl.style.display = 'none'; return; }
+    acTimers[inputId] = setTimeout(() => doSearch(val, acEl, input), 50);
   });
   input.addEventListener('input', () => {
     if (isComposing) return;
     clearTimeout(acTimers[inputId]);
     const val = input.value.trim();
-    if (val.length < 2) { acEl.style.display = 'none'; return; }
-    acTimers[inputId] = setTimeout(() => doSearch(val, acEl, input), 250);
+    if (val.length < 1) { acEl.style.display = 'none'; return; }
+    acTimers[inputId] = setTimeout(() => doSearch(val, acEl, input), 100);
   });
   input.addEventListener('blur', () => {
     setTimeout(() => { acEl.style.display = 'none'; }, 200);
@@ -652,16 +662,16 @@ function renderStops() {
       stops[i].name = input.value;
       clearTimeout(acTimers[stop.id]);
       const val = input.value.trim();
-      if (val.length < 2) { acEl.style.display = 'none'; return; }
-      acTimers[stop.id] = setTimeout(() => doSearch(val, acEl, input), 250);
+      if (val.length < 1) { acEl.style.display = 'none'; return; }
+      acTimers[stop.id] = setTimeout(() => doSearch(val, acEl, input), 50);
     });
     input.addEventListener('input', () => {
       if (isComposing) return;
       stops[i].name = input.value;
       clearTimeout(acTimers[stop.id]);
       const val = input.value.trim();
-      if (val.length < 2) { acEl.style.display = 'none'; return; }
-      acTimers[stop.id] = setTimeout(() => doSearch(val, acEl, input), 250);
+      if (val.length < 1) { acEl.style.display = 'none'; return; }
+      acTimers[stop.id] = setTimeout(() => doSearch(val, acEl, input), 100);
     });
     input.addEventListener('blur', () => {
       setTimeout(() => { acEl.style.display = 'none'; }, 200);
@@ -1332,7 +1342,7 @@ function setupAddPlaceAC() {
   if (!input) return;
   input.addEventListener('input', () => {
     const val = input.value.trim();
-    if (val.length < 2) { acEl.style.display = 'none'; return; }
+    if (val.length < 1) { acEl.style.display = 'none'; return; }
     clearTimeout(addPlaceAcTimer);
     addPlaceAcTimer = setTimeout(() => {
       if (!ps) return;
