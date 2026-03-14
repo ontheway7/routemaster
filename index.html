@@ -272,7 +272,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 <div class="app">
   <!-- Header -->
   <div class="header">
-    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3.8</small>
+    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3.7</small>
     </div>
     <!-- v2.0 추가 -->
     <div class="header-btns">
@@ -676,6 +676,7 @@ function renderStops() {
       if (val.length < 1) { acEl.style.display = 'none'; return; }
       acTimers[stop.id] = setTimeout(() => doSearch(val, acEl, input), 100);
     });
+    input.addEventListener('focus', closeAllPickers);
     input.addEventListener('blur', () => {
       setTimeout(() => { acEl.style.display = 'none'; }, 200);
     });
