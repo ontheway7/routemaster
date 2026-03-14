@@ -33,6 +33,8 @@
   v4.3.5- 2026.03.14  구간별 거리/시간 계산 방식 개선 (sections 활용, API 호출 감소)
   v4.3.6- 2026.03.14  지도 고정 높이 + 자동완성 1글자부터 / debounce 단축
   v4.3.7- 2026.03.14  내장소 팝업 닫기 쉽게 만들기
+  v4.3.8- 2026.03.14  지도 전체화면 확대 오류 해결
+
 -->
 
 <!DOCTYPE html>
@@ -1045,6 +1047,7 @@ function openKakaoNavi() {
 // ── 지도 전체화면 ──
 function openMapFullscreen() {
   const mapEl = document.getElementById('map');
+  mapEl.style.paddingTop = '0';
   mapEl.classList.add('fullscreen');
   setTimeout(() => {
     kakaoMap.relayout();
