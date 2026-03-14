@@ -1368,6 +1368,7 @@ function setupAddPlaceAC() {
       });
     }, 250);
   });
+  input.addEventListener('focus', closeAllPickers);
   input.addEventListener('blur', () => setTimeout(() => acEl.style.display = 'none', 200));
 }
 
