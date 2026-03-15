@@ -34,6 +34,7 @@
   v4.3.6- 2026.03.14  지도 고정 높이 + 자동완성 1글자부터 / debounce 단축
   v4.3.7- 2026.03.14  내장소 팝업 닫기 쉽게 만들기
   v4.3.8- 2026.03.14  지도 전체화면 확대 오류 해결
+  v4.3.9- 2026.03.15  API 한도 추과시 메시지 보여줌.
 
 -->
 
@@ -274,7 +275,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 <div class="app">
   <!-- Header -->
   <div class="header">
-    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3.8</small>
+    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3.9</small>
     </div>
     <!-- v2.0 추가 -->
     <div class="header-btns">
@@ -752,7 +753,11 @@ async function fetchRoadRoute(orderedCs) {
     headers: { Authorization: `KakaoAK ${MOBILITY_KEY}` }
   });
 
-  if (!res.ok) throw new Error(`카카오모빌리티 API 오류: ${res.status}`);
+  if (!res.ok) {
+  if (res.status === 429) throw new Error('이번 달 경로 검색 한도를 초과했어요.');
+  throw new Error(`카카오모빌리티 API 오류: ${res.status}`);
+  }
+
   const data = await res.json();
 
   if (!data.routes || !data.routes.length || data.routes[0].result_code !== 0) {
