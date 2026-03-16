@@ -7,4 +7,14 @@
       "CD:9F:78:D2:07:F5:A7:33:76:9B:17:1B:8E:69:33:03:D6:EE:58:FF:94:64:3E:D2:5B:8B:11:8B:7C:4E:AD:10"
     ]
   }
+},
+{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.ontheway7.dropby",
+    "sha256_cert_fingerprints": [
+      "F5:AB:3C:60:BE:15:C9:9E:5D:90:D4:35:16:4D:D2:BE:36:29:96:1B:B9:4F:9C:54:4C:F3:EC:B7:B4:07:3A:93"
+    ]
+  }
 }]
