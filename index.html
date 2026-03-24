@@ -152,7 +152,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 .btn-navi2 { margin:10px 16px 0; width:calc(100% - 32px); padding:12px; background:#3A1D94; border:none; border-radius:10px; color:#fff; font-family:'Black Han Sans',sans-serif; font-size:0.95rem; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
 
 /* STATUS */
-.status-bar { position:absolute; bottom:70px; left:16px; right:16px; background:rgba(22,27,34,0.95); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:0.78rem; color:var(--muted); z-index:1100; display:none; text-align:center; }
+.status-bar { position:absolute; bottom:70px; left:16px; right:16px; background:rgba(22,27,34,0.95); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:0.78rem; color:var(--muted); z-index:10; display:none; text-align:center; }
 .status-bar.show { display:block; }
 
 /* v3.0 추가: 전체화면 내 위치 버튼 */
@@ -1460,13 +1460,13 @@ function saveToMyPlace(p) {
   const name = p.place_name;
   const addr = p.road_address_name || p.address_name;
   if (places.some(x => x.name === name)) {
-    showStatus(`"${name}"은 이미 저장되어 있어요`); setTimeout(hideStatus, 2000);
+    showToast(`"${name}"은 이미 저장되어 있어요`);
     return;
   }
   places.push({ icon: '📍', name, addr, lat: parseFloat(p.y), lng: parseFloat(p.x) });
   savePlaces(places);
   coords[name] = { lat: parseFloat(p.y), lng: parseFloat(p.x) };
-  showStatus(`✅ "${name}" 내 장소로 저장!`); setTimeout(hideStatus, 2000);
+  showToast(`✅ "${name}" 내 장소로 저장!`, 2000);
 }
 
 let toastTimer = null;
