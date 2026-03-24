@@ -236,7 +236,7 @@ html,body { height:100%; background:var(--bg); color:var(--text); font-family:'N
 <div class="app">
   <!-- Header -->
   <div class="header">
-    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3.11</small>
+    <div class="logo">루트<span>마스터</span> <small style="font-size:0.55rem;opacity:0.5;letter-spacing:0">v4.3.12</small>
     </div>
     <!-- v2.0 추가 -->
     <div class="header-btns">
@@ -1484,7 +1484,7 @@ function exportPlaces() {
   const blob = new Blob([JSON.stringify(places, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `dropby_places_${new Date().toISOString().slice(0,19).replace('T','_').replaceAll(':','')}.json`;
+  a.download = `routemaster_places_${new Date().toISOString().slice(0,19).replace('T','_').replaceAll(':','')}.json`;
   a.click();
   showToast('✅ 내 장소를 Download 폴더에 저장했어요', 1800);
 }
